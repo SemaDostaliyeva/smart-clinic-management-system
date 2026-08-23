@@ -34,14 +34,18 @@ public class TokenService {
     /**
      * ✅ Generate JWT token for given email.
      */
-    public String generateToken(String email, String userType) {        return Jwts.builder()
-                .claim("sub", email)
-                .claim("role", userType)
-                .claim("iat", new Date(System.currentTimeMillis()))
-                .claim("exp", new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7 days
-                .signWith(getSigningKey())
-                .compact();
-    }
+    public String generateToken(String email, String userType) {
+    Date now = new Date();
+    Date expiration = new Date(now.getTime() + 1000L * 60 * 60 * 24 * 7);
+
+    return Jwts.builder()
+            .subject(email)
+            .claim("role", userType)
+            .issuedAt(now)
+            .expiration(expiration)
+            .signWith(getSigningKey())
+            .compact();
+}
 
     /**
      * ✅ Extract email from JWT token.
@@ -87,8 +91,9 @@ public class TokenService {
      * ✅ Generate signing key from secret.
      */
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+    return Keys.hmacShaKeyFor(
+            Decoders.BASE64.decode(jwtSecret)
+    );
+}
 
 }
